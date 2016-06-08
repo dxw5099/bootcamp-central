@@ -1,0 +1,84 @@
+---
+title: "Bootstrap"
+author: "Di Wu <br>
+dxw5099@psu.edu"
+date: "June 8, 2016"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+load the data
+```{r Dataloading}
+ReadCounts=read.csv("liverReads.csv",header=T,row.names=1)
+ReadCounts[1:5,1:12]
+dim(ReadCounts)
+```
+
+generate the null distribution and get samples from it
+```{r nullResample}
+samp=sample(1:12,12,replace=TRUE)
+bReadCounts=ReadCounts[,samp]
+colnames(bReadCounts)=colnames(ReadCounts)
+bReadCounts[1:2,]
+```
+
+generate the alernative distribution and get samples from each group
+```{r nonNullResample}
+samp=c(sample(1:6,6,replace=TRUE),sample(7:12,6,replace=TRUE))
+bReadCounts1=ReadCounts[,samp]
+colnames(bReadCounts1)=colnames(ReadCounts)
+bReadCounts1[1:2,]
+```
+
+generate a noisy resampling bootstrap sample <br>
+1. convert the data to a matrix <br>
+2. repace non-zero counts by (counts-0.3) <br>
+3. change the 0s in the count data to 0.25 <br>
+3. compute the number of entries inn the matrix
+```{r adjustReads}
+ReadCountsAdj=as.matrix(ReadCounts)
+ReadCountsAdj=ReadCountsAdj-.3
+ReadCountsAdj[ReadCountsAdj<0]=0.25
+nn=nrow(ReadCountsAdj)*ncol(ReadCountsAdj)
+nn
+```
+
+However, we need to reorganize these into the data matrix.
+```{r NoisyBootstrap}
+bNoisyReads=matrix(rpois(nn,ReadCountsAdj),ncol=ncol(ReadCountsAdj))
+```
+
+compare the actual counts and adjusted counts
+```{r compareCounts}
+ReadCounts[1:5,1:5]    # actual data
+ReadCountsAdj[1:5,1:5] # estimated Poisson means
+bNoisyReads[1:5,1:5]   # synthetic data
+```
+
+
+#### Parametric Bootstrap ####
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+As always, we end with session information.
+
+## Session Information
+
+```{r sessionInfo}
+sessionInfo()
+```
