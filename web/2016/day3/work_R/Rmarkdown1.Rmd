@@ -6,6 +6,14 @@ date: "June 8, 2016"
 output: html_document
 ---
 
+first install what packages we will need
+#```{r installation}
+#source("http://bioconductor.org/biocLite.R")
+#library(BiocInstaller)
+#biocLite("knitr")
+#library(knitr)
+#```
+
 The sine of $\pi/2$ is `r round(sin(pi/2),)`
 
 Let's write some code to generate random normals and draw a histogram.
@@ -31,6 +39,43 @@ correlations between gene expression and phenotypes and plot the correlations
 x=t(genes)
 cors=cor(x, pheno)
 hist(cors)
+cor1=cor.test(genes[1,], pheno)
+names(cor1)
+class(cor1)
+cor1$statistic #can get the t-value
+```
+
+Let's obtain the null distribution for:
+1. the largest absolute correlation
+2. the largest correlation
+3. the smallest correlation
+4. the r2 of the regression after selecting the 10 genes with highest absolute correlation
+
+```{r function}
+simR2=function(nsamp=20,ngene=1000,nsel=10){
+  if (nsel >= nsamp-1) stop("The number of genes selected must 
+                            be less than the sample size")
+  pheno=rnorm(nsamp)
+  genes=matrix(rnorm(nsamp*ngene),ncol=nsamp)
+  cors=cor(t(genes),pheno)
+  selgenes=order(cors,decreasing=TRUE)[1:nsel]
+  sigGenes=genes[selgenes,]
+  R2=var(fitted(lm(pheno~t(sigGenes))))/var(pheno)
+  c(maxAbsR=max(abs(cors)),minR=min(cors),maxR=max(cors),Rsq=R2)
+}
+```
+
+```{r simulation}
+simN20G1000S10=matrix(nrow=1000,ncol=4)
+for (i in 1:1000) simN20G1000S10[i,]=simR2(nsamp=20,ngene=1000,nsel=10)
+```
+
+```{r histNULL,echo=FALSE}
+par(mfrow=c(2,2))
+hist(simN20G1000S10[,1], nclass=50,main="Distribution of Largest Absolute Correlation",xlab="Maximum Absolute Correlation")
+hist(simN20G1000S10[,2], nclass=50,main="Distribution of Smallest Correlation",xlab="Minimum Correlation")
+hist(simN20G1000S10[,3], nclass=50,main="Distribution of Largest Correlation",xlab="Maximum Correlation")
+hist(simN20G1000S10[,4], nclass=50,main="Distribution of R-square of Selected Genes",xlab="R-square")
 ```
 
 This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
