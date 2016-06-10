@@ -58,8 +58,13 @@ bNoisyReads[1:5,1:5]   # synthetic data
 
 
 #### Parametric Bootstrap ####
-
-
+samples(count, libsize)
+replace 0 by 0.25
+copute pij=count/libsize for each gene in each sample
+copute p-bar_i=mean for each gene
+generate noisy version of pij using p-bar_i
+compute noisy count pij x libsize
+generate poisson(noisy count)
 
 
 
